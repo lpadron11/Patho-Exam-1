@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>N3280 Week 3 Midterm Practice Quiz</title>
+<style>
+  :root{
+    --navy:#132A3A;
+    --navy-deep:#0B1D29;
+    --teal:#1C7293;
+    --teal-light:#5FA8C9;
+    --mint:#7FD1AE;
+    --paper:#F6F8F9;
+    --card:#FFFFFF;
+    --ink:#16242E;
+    --muted:#5A6B76;
+    --wrong:#C4453A;
+    --right:#2E8B57;
+    --border:#E0E6E9;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .app{max-width:760px;margin:0 auto;padding:28px 18px 60px;}
+  .masthead{
+    background: linear-gradient(135deg, var(--navy-deep), var(--navy) 60%, var(--teal));
+    border-radius:14px;
+    padding:26px 24px;
+    color:#fff;
+    margin-bottom:22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .masthead::after{
+    content:"";
+    position:absolute; right:-40px; top:-40px;
+    width:160px;height:160px;border-radius:50%;
+    background:rgba(127,209,174,0.15);
+  }
+  .masthead h1{margin:0 0 6px; font-size:1.5rem; letter-spacing:0.2px;}
+  .masthead p{margin:0; color:#CFE3EA; font-size:0.92rem;}
+  .pill-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
+  .pill{
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.25);
+    border-radius:999px;
+    padding:4px 12px;
+    font-size:0.76rem;
+    color:#EAF3F6;
+  }
+
+  #setup-screen .section-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0 22px;
+  }
+  .sec-card{
+    background:var(--card); border:1.5px solid var(--border); border-radius:10px;
+    padding:12px 14px; cursor:pointer; transition:.15s;
+  }
+  .sec-card:hover{border-color:var(--teal-light);}
+  .sec-card.active{border-color:var(--teal); background:#EAF6F9;}
+  .sec-card .num{font-size:0.72rem; color:var(--teal); font-weight:700; letter-spacing:0.5px;}
+  .sec-card .name{font-size:0.86rem; font-weight:600; margin-top:2px;}
+  .sec-card .count{font-size:0.74rem; color:var(--muted); margin-top:4px;}
+
+  button.primary{
+    background: var(--teal); color:#fff; border:none; border-radius:9px;
+    padding:13px 20px; font-size:0.98rem; font-weight:600; cursor:pointer;
+    width:100%; transition:.15s;
+  }
+  button.primary:hover{background:var(--navy);}
+  button.ghost{
+    background:transparent; color:var(--teal); border:1.5px solid var(--teal);
+    border-radius:9px; padding:10px 18px; font-size:0.9rem; font-weight:600; cursor:pointer;
+  }
+  button.ghost:hover{background:#EAF6F9;}
+
+  .quiz-card{
+    background:var(--card); border-radius:14px; border:1px solid var(--border);
+    padding:24px; box-shadow:0 2px 10px rgba(19,42,58,0.05);
+  }
+  .progress-track{
+    height:6px; background:var(--border); border-radius:6px; overflow:hidden; margin-bottom:18px;
+  }
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--teal), var(--mint)); transition:.3s;}
+  .q-meta{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .q-tag{font-size:0.72rem; font-weight:700; color:var(--teal); letter-spacing:0.5px; text-transform:uppercase;}
+  .q-count{font-size:0.78rem; color:var(--muted);}
+  .q-text{font-size:1.08rem; line-height:1.5; margin:6px 0 18px; font-weight:600; color:var(--navy-deep);}
+  .choice{
+    display:block; width:100%; text-align:left; background:#fff;
+    border:1.5px solid var(--border); border-radius:9px; padding:12px 14px;
+    margin-bottom:9px; font-size:0.92rem; cursor:pointer; transition:.12s;
+    color:var(--ink);
+  }
+  .choice:hover{border-color:var(--teal-light); background:#F7FBFC;}
+  .choice.selected-right{border-color:var(--right); background:#EAF7EF; color:#1E5E3C;}
+  .choice.selected-wrong{border-color:var(--wrong); background:#FBEAE8; color:#8C2E26;}
+  .choice.reveal-right{border-color:var(--right); background:#EAF7EF; color:#1E5E3C;}
+  .choice[disabled]{cursor:default;}
+  .explain{
+    margin-top:10px; padding:12px 14px; border-radius:9px; background:#F0F5F3;
+    font-size:0.87rem; color:var(--muted); border-left:3px solid var(--teal); display:none;
+  }
+  .explain.show{display:block;}
+  .nav-row{display:flex; justify-content:space-between; margin-top:20px; gap:10px;}
+
+  #result-screen .quiz-card{text-align:center;}
+  .score-circle{
+    width:130px; height:130px; border-radius:50%; margin:14px auto 6px;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    background: conic-gradient(var(--teal) calc(var(--pct) * 1%), var(--border) 0);
+  }
+  .score-circle-inner{
+    width:104px; height:104px; border-radius:50%; background:#fff;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+  }
+  .score-circle-inner .big{font-size:1.6rem; font-weight:800; color:var(--navy-deep);}
+  .score-circle-inner .small{font-size:0.7rem; color:var(--muted);}
+  .breakdown{text-align:left; margin-top:20px;}
+  .breakdown-row{
+    display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);
+    font-size:0.86rem;
+  }
+  .missed-list{text-align:left; margin-top:16px;}
+  .missed-item{
+    background:#FBEAE8; border-radius:8px; padding:10px 12px; margin-bottom:8px; font-size:0.83rem;
+  }
+  .missed-item .qtxt{font-weight:600; color:#8C2E26; margin-bottom:3px;}
+  .hidden{display:none;}
+  .foot-note{text-align:center; color:var(--muted); font-size:0.74rem; margin-top:18px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="masthead">
+    <h1>N3280 Pathophysiology — Week 3 Practice Quiz</h1>
+    <p>Sections X-XIII: Nervous System Structure &amp; Function · Pain/Temp/Sleep/Sensory · Neurologic Dysfunction · Neurologic Trauma &amp; Disorders</p>
+    <div class="pill-row" id="pill-row"></div>
+  </div>
+
+  <div id="setup-screen">
+    <div class="quiz-card">
+      <p style="margin-top:0; color:var(--muted); font-size:0.9rem;">Pick which section(s) to practice, or leave all selected for a full mixed quiz.</p>
+      <div class="section-grid" id="section-grid"></div>
+      <button class="primary" id="start-btn">Start Quiz</button>
+    </div>
+  </div>
+
+  <div id="quiz-screen" class="hidden">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="quiz-card">
+      <div class="q-meta">
+        <span class="q-tag" id="q-tag"></span>
+        <span class="q-count" id="q-count"></span>
+      </div>
+      <div class="q-text" id="q-text"></div>
+      <div id="choices"></div>
+      <div class="explain" id="explain"></div>
+      <div class="nav-row">
+        <button class="ghost" id="quit-btn">End Quiz</button>
+        <button class="primary" id="next-btn" style="width:auto; display:none;">Next Question →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="result-screen" class="hidden">
+    <div class="quiz-card">
+      <h2 style="margin-top:0;">Results</h2>
+      <div class="score-circle" id="score-circle" style="--pct:0;">
+        <div class="score-circle-inner">
+          <div class="big" id="score-big">0%</div>
+          <div class="small">score</div>
+        </div>
+      </div>
+      <div id="score-line" style="color:var(--muted); font-size:0.9rem;"></div>
+      <div class="breakdown" id="breakdown"></div>
+      <div class="missed-list" id="missed-list"></div>
+      <div class="nav-row">
+        <button class="ghost" id="retake-btn">Retake Missed Only</button>
+        <button class="primary" id="restart-btn" style="width:auto;">New Quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot-note">Based on N3280 Week 3 lecture content (Ch. 14-16) &amp; study guide. Good luck! 🩺</div>
+</div>
+
+<script>
+const QUESTIONS = [
+// ---- SECTION X: Nervous System Structure and Function ----
+{sec:"X", tag:"Nervous System", q:"Which division of the nervous system regulates voluntary motor control of skeletal muscle?", choices:["Autonomic nervous system","Somatic nervous system","Sympathetic nervous system","Parasympathetic nervous system"], correct:1, explain:"The somatic nervous system regulates voluntary motor control (e.g., skeletal muscle); the autonomic nervous system regulates involuntary control of internal organs."},
+{sec:"X", tag:"Nervous System", q:"Which neuron structure carries impulses TOWARD the cell body?", choices:["Axon","Dendrite","Axon hillock","Synaptic knob"], correct:1, explain:"Dendrites carry impulses toward the cell body; axons carry impulses away from it."},
+{sec:"X", tag:"Nervous System", q:"Saltatory conduction, which speeds nerve impulse transmission, depends on the presence of:", choices:["Nodes of Ranvier","The axon hillock","Synaptic boutons","Nissl substance"], correct:0, explain:"Nodes of Ranvier are regular interruptions in the myelin sheath; ions flow between these nodes (saltatory conduction) rather than continuously along the axon, greatly increasing conduction speed."},
+{sec:"X", tag:"Nervous System", q:"Nerve regeneration after injury is generally limited to which condition?", choices:["Unmyelinated axons in the CNS","Myelinated axons, generally only in the PNS","Any axon in the CNS or PNS","Only cell bodies located in ganglia"], correct:1, explain:"Regeneration is limited to myelinated axons and generally occurs only in the PNS, not the CNS, since mature nerve cells do not divide."},
+{sec:"X", tag:"Nervous System", q:"Which best describes upper motor neurons?", choices:["Cell bodies in spinal gray matter with axons extending into the PNS","Completely contained within the CNS, controlling fine motor movement","Located exclusively in ganglia","Directly synapse onto muscle fibers at the neuromuscular junction"], correct:1, explain:"Upper motor neurons are completely contained within the CNS and control fine motor movement/modify spinal reflex arcs; lower motor neurons have axons that extend into the PNS and directly influence muscles."},
+{sec:"X", tag:"Nervous System", q:"How many pairs of spinal nerves arise from the spinal cord?", choices:["12","24","31","33"], correct:2, explain:"There are 31 pairs of spinal nerves (compared to 12 pairs of cranial nerves and 33 total vertebrae)."},
+{sec:"X", tag:"Nervous System", q:"Which structure is responsible for selectively restricting substances in the blood from entering brain interstitial fluid or CSF?", choices:["The meninges","The blood-brain barrier","The choroid plexus","The Circle of Willis"], correct:1, explain:"The blood-brain barrier consists of endothelial cells joined by tight junctions (supported by astrocytes, pericytes, microglia) that selectively restrict substances from entering brain tissue/CSF."},
+{sec:"X", tag:"Nervous System", q:"Which structure provides an alternate route for cerebral blood flow if a major artery becomes obstructed?", choices:["The dural sinuses","The Circle of Willis","The internal jugular vein","The arachnoid villi"], correct:1, explain:"The Circle of Willis connects the internal carotid and vertebral arterial systems, providing collateral circulation if one artery is obstructed."},
+{sec:"X", tag:"Nervous System", q:"Cerebrospinal fluid is produced by the:", choices:["Arachnoid villi","Choroid plexuses of the ventricles","Dura mater","Meninges"], correct:1, explain:"CSF is produced by the choroid plexuses in the lateral, third, and fourth ventricles, and is reabsorbed through the arachnoid villi."},
+{sec:"X", tag:"Nervous System", q:"Which best describes the parasympathetic nervous system?", choices:["Thoracolumbar division, releases norepinephrine postganglionically, promotes 'fight or flight'","Craniosacral division, promotes 'rest and tranquility'","Located only in the sacral spinal cord","Increases heart rate and blood glucose"], correct:1, explain:"The parasympathetic nervous system is the craniosacral division (cranial nerve nuclei and sacral spinal cord), promoting 'rest and tranquility' and using acetylcholine at both pre- and postganglionic synapses."},
+{sec:"X", tag:"Nervous System", q:"Sympathetic nervous system stimulation produces which effect?", choices:["Decreased heart rate and blood pressure","Increased blood glucose, temperature, heart rate, and blood pressure","Enhanced visceral digestive function only","Pupillary constriction only"], correct:1, explain:"Sympathetic stimulation promotes protective 'fight or flight' responses, increasing blood glucose, temperature, heart rate, and blood pressure."},
+
+// ---- SECTION XI: Pain, Temperature, Sleep, and Sensory Function ----
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Which nerve fiber type transmits localized, fast, sharp pain sensations?", choices:["Unmyelinated C fibers","Myelinated A-delta fibers","B fibers","Autonomic fibers"], correct:1, explain:"A-delta myelinated fibers transmit localized, fast pain; unmyelinated C fibers transmit poorly localized, dull, aching pain."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Which system determines pain threshold, perceptual dominance, and pain tolerance?", choices:["Sensory-discriminative system","Affective-motivational system","Cognitive-evaluative system","Autonomic system"], correct:2, explain:"The cognitive-evaluative system governs pain threshold, perceptual dominance, and pain tolerance — the cognitive processing of the pain experience."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Endogenous opioids such as enkephalins and endorphins relieve pain by:", choices:["Blocking nociceptor transduction only","Binding opioid receptors to inhibit pain impulse transmission","Increasing substance P release","Causing peripheral vasodilation"], correct:1, explain:"Endogenous opioids bind opioid receptors throughout the body to inhibit pain transmission in the periphery, spinal cord, and brain, acting as direct agonists similar to morphine."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Pain arising from internal organs, often poorly localized with an aching or cramping quality, is:", choices:["Somatic pain","Visceral pain","Neuropathic pain","Referred pain"], correct:1, explain:"Visceral pain arises from internal organs/body cavity linings and is typically poorly localized (aching, gnawing, throbbing, cramping), often radiating or referred."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Pain felt in an area distant from its actual point of origin, supplied by the same spinal segment, is called:", choices:["Referred pain","Central pain","Peripheral neuropathic pain","Phantom pain"], correct:0, explain:"Referred pain is felt in an area removed from its origin but supplied by the same spinal segment as the actual site."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Burning, shooting, or shocklike pain resulting from long-term changes in pain pathway structure is characteristic of:", choices:["Somatic pain","Visceral pain","Neuropathic pain","Acute pain"], correct:2, explain:"Neuropathic pain results from dysfunction causing long-term changes in pain pathways and abnormal sensory processing, often described as burning, shooting, or shocklike."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Which structure serves as the body's biggest peripheral temperature regulator?", choices:["Liver","Skeletal muscle","Skin","Hypothalamus"], correct:2, explain:"The skin is described as the biggest peripheral temperature regulator, along with the liver and skeletal muscle; the hypothalamus is the central regulator."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"A temporary resetting of the hypothalamic thermostat to a higher level, driven by pyrogens, describes:", choices:["Hyperthermia","Fever","Hypothermia","Heat stroke"], correct:1, explain:"Fever is a temporary resetting of the hypothalamic thermostat to a higher level, increasing heat production and conservation; hyperthermia occurs WITHOUT a change in the set point."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Elevated body temperature WITHOUT a change in the hypothalamic set point describes:", choices:["Fever","Hyperthermia","Normal thermoregulation","Central fever"], correct:1, explain:"Hyperthermia is an elevation in body temperature without an increase in the hypothalamic set point, and can cause nerve damage, protein coagulation, and death."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Failure of heat loss mechanisms at a core temperature above 40°C (104°F), which may be lethal, describes:", choices:["Heat cramps","Heat exhaustion","Heat stroke","Malignant hyperthermia"], correct:2, explain:"Heat stroke is the failure of heat loss mechanisms at core temperatures above 40°C (104°F) and may be lethal."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Central fever from CNS trauma differs from typical fever in that it:", choices:["Responds well to antipyretic therapy","Does not induce sweating and is resistant to antipyretics","Only occurs with hypothermia","Is always caused by infection"], correct:1, explain:"Central fever from CNS trauma (inflammation, increased ICP, intracranial bleeding) does not induce sweating and is resistant to antipyretic therapy."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Which sleep phase is called 'paradoxical sleep' because the EEG resembles the awake pattern?", choices:["NREM sleep","REM sleep","Stage 3 sleep","Delta sleep"], correct:1, explain:"REM sleep is called 'paradoxical sleep' because its EEG pattern resembles normal wakefulness, despite muscle relaxation and reduced responsiveness."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Which hypothalamic neuropeptides promote wakefulness and REM sleep?", choices:["Endorphins","Hypocretins (orexins)","Melatonin","Serotonin"], correct:1, explain:"Hypocretins (orexins), secreted by the hypothalamus, promote wakefulness and REM sleep; their immune-mediated destruction is linked to narcolepsy."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"The most commonly diagnosed sleep disorder, resulting from partial/total upper airway obstruction, is:", choices:["Narcolepsy","Obstructive sleep apnea syndrome","Restless leg syndrome","Delayed sleep phase disorder"], correct:1, explain:"Obstructive sleep apnea syndrome is the most commonly diagnosed sleep disorder, caused by upper airway obstruction, with risk factors including obesity, male sex, and older age."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Narcolepsy is associated with immune-mediated destruction of which cells?", choices:["Dopamine-producing neurons in the basal ganglia","Hypocretin (orexin)-secreting cells in the hypothalamus","Myelin-producing oligodendrocytes","Acetylcholine receptors at the neuromuscular junction"], correct:1, explain:"Narcolepsy is associated with immune-mediated destruction of hypocretin (orexin)-secreting cells in the hypothalamus."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Sleepwalking and night terrors, occurring during NREM stage 3 sleep, are classified as:", choices:["Dyssomnias","Parasomnias","Circadian rhythm disorders","Central hypersomnolence"], correct:1, explain:"Parasomnias are unusual behaviors occurring during NREM stage 3 sleep, including sleepwalking, night terrors, and restless leg syndrome."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Which eye layer contains the rods and cones responsible for light detection?", choices:["Sclera","Choroid","Retina","Cornea"], correct:2, explain:"The retina is the innermost eye layer and contains the photoreceptors (rods and cones)."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Elevated intraocular pressure causing progressive optic nerve damage describes:", choices:["Cataracts","Glaucoma","Retinal detachment","Presbyopia"], correct:1, explain:"Glaucoma involves elevated intraocular pressure, which can damage the optic nerve and cause visual acuity loss."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Age-related loss of lens accommodation is called:", choices:["Presbyopia","Presbycusis","Myopia","Astigmatism"], correct:0, explain:"Presbyopia is the age-related loss of lens accommodation (ability to focus at different distances); presbycusis is age-related hearing loss."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Impaired sound conduction from the outer to the inner ear describes which type of hearing loss?", choices:["Sensorineural hearing loss","Conductive hearing loss","Mixed hearing loss","Functional hearing loss"], correct:1, explain:"Conductive hearing loss is impaired sound conduction from the outer to the inner ear; sensorineural hearing loss involves the organ of Corti or its neural connections."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Which best differentiates acute otitis media from otitis media with effusion?", choices:["Acute otitis media involves active infection; otitis media with effusion involves fluid without active infection signs","They are identical conditions","Otitis media with effusion always requires antibiotics","Acute otitis media only affects the outer ear"], correct:0, explain:"Acute otitis media involves active middle ear infection/inflammation, while otitis media with effusion involves fluid remaining in the middle ear without active infection signs, often after infection resolves."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Complete loss of the sense of smell is called:", choices:["Hyposmia","Anosmia","Parosmia","Ageusia"], correct:1, explain:"Anosmia is complete loss of smell; hyposmia is impaired (but not absent) smell; parosmia is an abnormal sense of smell."},
+{sec:"XI", tag:"Pain/Temp/Sleep/Senses", q:"Proprioception (awareness of body position) depends primarily on which structures?", choices:["Retina and optic nerve","Inner ear and joint/ligament receptors","Olfactory bulb","Taste buds"], correct:1, explain:"Proprioception depends on the inner ear (vestibular system) and receptors in the joints and ligaments; its progressive age-related loss increases fall risk."},
+
+// ---- SECTION XII: Neurologic Dysfunction ----
+{sec:"XII", tag:"Neurologic Dysfunction", q:"Which neurologic function is considered the SINGLE most critical indicator in evaluating consciousness?", choices:["Pupillary reaction","Level of consciousness","Motor response","Breathing pattern"], correct:1, explain:"Level of consciousness is described as the most critical of the five neurologic functions used to evaluate consciousness."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"A structural cause of altered arousal located below the tentorium cerebelli, involving destruction of the reticular activating system, is classified as:", choices:["Supratentorial","Infratentorial","Metabolic","Psychogenic"], correct:1, explain:"Infratentorial structural causes are below the tentorium cerebelli and involve destruction of the reticular activating system or brainstem."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"Which condition involves an irreversible brain state with unresponsive coma, no spontaneous respirations, no brainstem function, and a flat EEG?", choices:["Cerebral death","Persistent vegetative state","Brain death (total brain death)","Locked-in syndrome"], correct:2, explain:"Brain death requires unresponsive coma, no spontaneous respirations, no brainstem functions, and a flat EEG, among other criteria, and is irreversible."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"A patient is conscious and aware but cannot move or speak due to near-total paralysis, though eye movement is preserved. This describes:", choices:["Persistent vegetative state","Minimally conscious state","Locked-in syndrome","Cerebral death"], correct:2, explain:"Locked-in syndrome involves preserved consciousness and awareness with near-complete paralysis, typically sparing eye movement, which becomes the main channel of communication."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"Inability to form NEW memories after a brain injury is:", choices:["Retrograde amnesia","Anterograde amnesia","Global amnesia","Executive attention deficit"], correct:1, explain:"Anterograde amnesia is the inability to form new memories after the onset of the causative injury/event; retrograde amnesia is loss of memories from before the injury."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"A defect of pattern recognition (tactile, visual, or auditory) is called:", choices:["Aphasia","Agnosia","Apraxia","Ataxia"], correct:1, explain:"Agnosia is a defect of pattern recognition; aphasia is a defect of language comprehension/production."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"Which pathologic finding is characteristic of Alzheimer disease?", choices:["Demyelination of CNS neurons","Neuritic plaques and neurofibrillary tangles","Loss of dopamine-producing neurons in the basal ganglia","Autoantibodies against acetylcholine receptors"], correct:1, explain:"Alzheimer disease is characterized pathologically by neuritic (senile) plaques and neurofibrillary tangles."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"Dementia resulting from cerebral hypoperfusion due to large artery disease, cardioembolism, or stroke is:", choices:["Alzheimer disease","Vascular dementia","Frontotemporal dementia","Lewy body dementia"], correct:1, explain:"Vascular dementia is a consequence of cerebrovascular disease and conditions causing cerebral hypoperfusion."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"A seizure is best defined as:", choices:["A disease of recurrent unpredictable episodes","A sudden, transient alteration of brain function from abnormal excessive cortical neuron discharge — a manifestation of disease, not a disease itself","A permanent state of altered consciousness","Always associated with tonic-clonic movements"], correct:1, explain:"A seizure is a manifestation of disease (a sudden, transient alteration of brain function from abnormal excessive discharge), not a disease itself; epilepsy is the disease of recurrent, unpredictable seizures."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"The phase immediately following a seizure, characterized by headache, confusion, and memory loss, is called:", choices:["Preictal phase","Aura","Postictal state","Status epilepticus"], correct:2, explain:"The postictal state occurs after the seizure (ictus) ends, with headache, confusion, dysphasia, memory loss, or paralysis."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"A state of continuous, unremitting seizures is called:", choices:["Status epilepticus","Postictal state","Myoclonic syndrome","Convulsion"], correct:0, explain:"Status epilepticus is a state of continuous seizures and constitutes a medical emergency."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"Cerebral edema caused by increased capillary permeability, allowing fluid to leak into the extracellular space, is:", choices:["Cytotoxic edema","Vasogenic edema","Interstitial edema","Hydrocephalic edema only"], correct:1, explain:"Vasogenic edema results from increased capillary permeability, allowing fluid to leak into the extracellular space, often around tumors, injury, or infection."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"Cerebral edema caused by cellular injury leading to fluid shifting INTO cells (as with hypoxia/ischemia) is:", choices:["Vasogenic edema","Cytotoxic edema","Interstitial edema","Communicating edema"], correct:1, explain:"Cytotoxic edema results from cellular injury causing fluid to shift intracellularly, as seen with hypoxia/ischemia."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"Hydrocephalus caused by an obstruction WITHIN the ventricular system (preventing CSF from reaching the subarachnoid space) is classified as:", choices:["Communicating hydrocephalus","Noncommunicating hydrocephalus","Normal-pressure hydrocephalus","Vasogenic hydrocephalus"], correct:1, explain:"Noncommunicating hydrocephalus involves an internal/intraventricular obstruction preventing CSF from reaching the subarachnoid space."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"Severe degeneration of the basal ganglia with loss of dopamine-producing neurons, causing tremor, rigidity, and bradykinesia, describes:", choices:["Alzheimer disease","Parkinson disease","Multiple sclerosis","Amyotrophic lateral sclerosis"], correct:1, explain:"Parkinson disease results from severe basal ganglia degeneration with loss of dopamine-producing neurons, producing tremor, rigidity, bradykinesia, and postural disturbances."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"Which finding is characteristic of LOWER motor neuron syndromes (not upper)?", choices:["Spastic paralysis","Hemiplegia","Flaccid paresis/paralysis, fasciculations, and fibrillation","Increased deep tendon reflexes"], correct:2, explain:"Lower motor neuron syndromes result from injury to alpha motor neurons and produce flaccid paresis/paralysis, fasciculations, and fibrillation — unlike the spastic paralysis typical of upper motor neuron injury."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"Amyotrophic lateral sclerosis (ALS) is unique among motor neuron diseases because it involves:", choices:["Only upper motor neurons","Only lower motor neurons","BOTH upper and lower motor neurons","Only the cerebellum"], correct:2, explain:"ALS involves progressive degeneration of BOTH upper and lower motor neurons, causing progressive weakness, atrophy, spasticity, and usually fatal respiratory failure within about 3 years."},
+{sec:"XII", tag:"Neurologic Dysfunction", q:"Ataxia affecting primarily the same side of the body as the lesion is characteristic of which motor syndrome?", choices:["Pyramidal tract syndrome","Extrapyramidal syndrome","Cerebellar syndrome","Lower motor neuron syndrome"], correct:2, explain:"Cerebellar motor syndromes are associated with ataxia that primarily affects the same side of the body as the cerebellar lesion."},
+
+// ---- SECTION XIII: Neurologic Trauma and Neurologic Disorders ----
+{sec:"XIII", tag:"Trauma & Disorders", q:"A brain injury occurring on the side OPPOSITE the point of impact, as the brain rebounds within the skull, is called:", choices:["Coup injury","Contrecoup injury","Diffuse axonal injury","Concussion"], correct:1, explain:"Contrecoup injury occurs on the side opposite the impact, as the brain rebounds within the skull; coup injury occurs directly beneath the impact site."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"Widespread shearing of axons from rotational/acceleration-deceleration forces, often causing prolonged coma, describes:", choices:["Coup injury","Diffuse axonal injury","Epidural hematoma","Spinal shock"], correct:1, explain:"Diffuse axonal injury involves widespread axonal shearing from rotational/acceleration-deceleration forces and is associated with prolonged coma."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"Temporary loss of all reflex activity below the level of a spinal cord injury, occurring immediately after injury, is called:", choices:["Autonomic hyperreflexia","Spinal shock","Neurogenic shock only","Cerebral death"], correct:1, explain:"Spinal shock is a temporary loss of all reflex activity (flaccid paralysis, sensory loss, autonomic loss) below the level of injury, typically resolving over days to weeks."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"A patient with a spinal cord injury above T6 develops severe hypertension, bradycardia, and sweating above the injury level after their bladder becomes distended. This describes:", choices:["Spinal shock","Autonomic hyperreflexia (dysreflexia)","A migraine","Increased intracranial pressure"], correct:1, explain:"Autonomic hyperreflexia is an uninhibited sympathetic response to a noxious stimulus (e.g., full bladder) below the level of injury (typically above T6), causing severe hypertension, bradycardia, sweating, and flushing above the injury — a medical emergency."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"Which type of stroke is caused by rupture of a cerebral blood vessel?", choices:["Ischemic stroke","Hemorrhagic stroke","Transient ischemic attack","Embolic stroke"], correct:1, explain:"Hemorrhagic stroke is caused by rupture of a cerebral vessel, with bleeding into brain tissue or the subarachnoid space; ischemic stroke and TIA involve blocked (not ruptured) blood flow."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"A temporary interruption of cerebral blood flow producing stroke-like symptoms that completely resolve is called a:", choices:["Hemorrhagic stroke","Transient ischemic attack (TIA)","Cluster headache","Migraine with aura"], correct:1, explain:"A TIA is a temporary interruption of cerebral blood flow with stroke-like symptoms that resolve completely, serving as a warning sign for future stroke risk."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"Which headache type is typically unilateral, pulsating, and associated with nausea and photophobia, sometimes preceded by an aura?", choices:["Tension-type headache","Migraine headache","Cluster headache","Secondary headache"], correct:1, explain:"Migraine headache is often unilateral and pulsating, associated with nausea, vomiting, photophobia/phonophobia, and may be preceded by an aura."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"An autoimmune disease in which the immune system attacks the myelin sheath of CNS neurons is:", choices:["Myasthenia gravis","Multiple sclerosis","Amyotrophic lateral sclerosis","Guillain-Barré syndrome"], correct:1, explain:"Multiple sclerosis is a chronic autoimmune disease in which the immune system attacks CNS myelin, disrupting nerve conduction."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"An autoimmune disease in which antibodies attack acetylcholine receptors at the neuromuscular junction, causing fatigable muscle weakness, is:", choices:["Multiple sclerosis","Myasthenia gravis","Parkinson disease","ALS"], correct:1, explain:"Myasthenia gravis involves antibodies against acetylcholine receptors at the neuromuscular junction, causing fluctuating, fatigable muscle weakness that worsens with activity and improves with rest."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"Which two fontanelles are present in an infant until approximately 18 months of age, allowing for skull compression at birth and rapid brain growth?", choices:["Anterior and posterior fontanelles","Lateral and medial fontanelles","Superior and inferior fontanelles","Frontal and occipital fontanelles"], correct:0, explain:"The anterior and posterior fontanelles are soft gaps between skull bones that allow compression during birth and accommodate rapid infant brain growth; the posterior closes by ~2-3 months and the anterior by ~12-18 months."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"Which is the most significant MODIFIABLE risk factor for neural tube defects?", choices:["Maternal folic acid deficiency","Paternal age","Birth order","Infant sex"], correct:0, explain:"Maternal folic acid deficiency is a major modifiable risk factor for neural tube defects; folic acid supplementation reduces this risk."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"Protrusion of BOTH the meninges and neural tissue through a vertebral defect describes:", choices:["Spina bifida occulta","Meningocele","Myelomeningocele","Anencephaly"], correct:2, explain:"Myelomeningocele involves protrusion of both meninges and neural tissue (spinal cord/nerve roots), the most severe and clinically significant common form of spina bifida."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"Premature fusion of one or more cranial sutures, restricting skull growth, is called:", choices:["Microcephaly","Craniosynostosis","Hydrocephalus","Anencephaly"], correct:1, explain:"Craniosynostosis is premature fusion of cranial sutures, restricting skull growth and potentially causing abnormal head shape or increased ICP."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"In neonates, hypoxic-ischemic encephalopathy (HIE) may be treated with which intervention to reduce secondary neuronal injury?", choices:["Immediate high-dose corticosteroids","Therapeutic hypothermia (cooling)","Emergency craniotomy in all cases","Antiepileptic drugs only"], correct:1, explain:"Therapeutic hypothermia (cooling) is used to reduce secondary neuronal injury in neonatal hypoxic-ischemic encephalopathy."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"Which sign is a classic, EARLY indicator of increased intracranial pressure in an INFANT with open fontanelles?", choices:["Cushing triad","Bulging fontanelle and increasing head circumference","Fixed, dilated pupil only","Decerebrate posturing only"], correct:1, explain:"In infants, open fontanelles/sutures allow early signs such as a bulging fontanelle, increasing head circumference, and split sutures to signal increased ICP, before the more ominous Cushing triad appears."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"The most common malignant embryonal CNS tumor of the cerebellum in children is:", choices:["Meningioma","Medulloblastoma","Pilocytic astrocytoma","Glioblastoma"], correct:1, explain:"Medulloblastoma is a common malignant embryonal tumor arising in the cerebellum in children."},
+{sec:"XIII", tag:"Trauma & Disorders", q:"Which pathogen has decreased significantly as a cause of bacterial meningitis due to vaccination?", choices:["Streptococcus pneumoniae","Neisseria meningitidis","Haemophilus influenzae type b","Group B Streptococcus"], correct:2, explain:"Haemophilus influenzae type b was historically a common cause of bacterial meningitis but has decreased significantly with widespread vaccination."},
+];
+
+const SECTIONS = [
+  {id:"X", name:"Nervous System Structure & Function", num:"X"},
+  {id:"XI", name:"Pain, Temp, Sleep & Sensory", num:"XI"},
+  {id:"XII", name:"Neurologic Dysfunction", num:"XII"},
+  {id:"XIII", name:"Neurologic Trauma & Disorders", num:"XIII"},
+];
+
+let activeSections = new Set(SECTIONS.map(s=>s.id));
+let quizQueue = [];
+let current = 0;
+let answers = [];
+let missedQueue = [];
+
+const pillRow = document.getElementById('pill-row');
+pillRow.innerHTML = `<span class="pill">${QUESTIONS.length} total questions</span><span class="pill">3 topic areas</span>`;
+
+function renderSetup(){
+  const grid = document.getElementById('section-grid');
+  grid.innerHTML = '';
+  SECTIONS.forEach(s=>{
+    const count = QUESTIONS.filter(q=>q.sec===s.id).length;
+    const div = document.createElement('div');
+    div.className = 'sec-card' + (activeSections.has(s.id) ? ' active' : '');
+    div.innerHTML = `<div class="num">SECTION ${s.num}</div><div class="name">${s.name}</div><div class="count">${count} questions</div>`;
+    div.onclick = ()=>{
+      if(activeSections.has(s.id)){ activeSections.delete(s.id); } else { activeSections.add(s.id); }
+      renderSetup();
+    };
+    grid.appendChild(div);
+  });
+}
+renderSetup();
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+document.getElementById('start-btn').onclick = ()=>{
+  let pool = QUESTIONS.filter(q=>activeSections.has(q.sec));
+  if(pool.length===0) pool = QUESTIONS.slice();
+  quizQueue = shuffle(pool);
+  current = 0;
+  answers = [];
+  document.getElementById('setup-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  document.getElementById('result-screen').classList.add('hidden');
+  showQuestion();
+};
+
+function showQuestion(){
+  const q = quizQueue[current];
+  document.getElementById('progress-fill').style.width = ((current)/quizQueue.length*100)+'%';
+  document.getElementById('q-tag').textContent = q.tag;
+  document.getElementById('q-count').textContent = `Question ${current+1} of ${quizQueue.length}`;
+  document.getElementById('q-text').textContent = q.q;
+  const choicesDiv = document.getElementById('choices');
+  choicesDiv.innerHTML = '';
+  const explainDiv = document.getElementById('explain');
+  explainDiv.classList.remove('show');
+  explainDiv.textContent = '';
+  document.getElementById('next-btn').style.display = 'none';
+
+  q.choices.forEach((choiceText, idx)=>{
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.textContent = choiceText;
+    btn.onclick = ()=> selectAnswer(idx);
+    choicesDiv.appendChild(btn);
+  });
+}
+
+function selectAnswer(idx){
+  const q = quizQueue[current];
+  const buttons = document.querySelectorAll('#choices .choice');
+  buttons.forEach(b=> b.disabled = true);
+  const isCorrect = idx === q.correct;
+  buttons[idx].classList.add(isCorrect ? 'selected-right' : 'selected-wrong');
+  if(!isCorrect){ buttons[q.correct].classList.add('reveal-right'); }
+  const explainDiv = document.getElementById('explain');
+  explainDiv.textContent = q.explain;
+  explainDiv.classList.add('show');
+  answers.push({question:q.q, tag:q.tag, sec:q.sec, chosen:idx, correctIdx:q.correct, isCorrect, choices:q.choices});
+  document.getElementById('next-btn').style.display = 'inline-block';
+  document.getElementById('next-btn').textContent = (current === quizQueue.length-1) ? 'See Results →' : 'Next Question →';
+}
+
+document.getElementById('next-btn').onclick = ()=>{
+  current++;
+  if(current >= quizQueue.length){
+    showResults();
+  } else {
+    showQuestion();
+  }
+};
+
+document.getElementById('quit-btn').onclick = ()=>{
+  if(answers.length===0){
+    document.getElementById('quiz-screen').classList.add('hidden');
+    document.getElementById('setup-screen').classList.remove('hidden');
+  } else {
+    showResults();
+  }
+};
+
+function showResults(){
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('quiz-screen').classList.add('hidden');
+  document.getElementById('result-screen').classList.remove('hidden');
+
+  const correctCount = answers.filter(a=>a.isCorrect).length;
+  const total = answers.length;
+  const pct = total ? Math.round(correctCount/total*100) : 0;
+
+  document.getElementById('score-circle').style.setProperty('--pct', pct);
+  document.getElementById('score-big').textContent = pct+'%';
+  document.getElementById('score-line').textContent = `${correctCount} of ${total} correct`;
+
+  const breakdown = document.getElementById('breakdown');
+  breakdown.innerHTML = '<h3 style="margin-bottom:6px;">By Section</h3>';
+  SECTIONS.forEach(s=>{
+    const secAnswers = answers.filter(a=>a.sec===s.id);
+    if(secAnswers.length===0) return;
+    const secCorrect = secAnswers.filter(a=>a.isCorrect).length;
+    const row = document.createElement('div');
+    row.className = 'breakdown-row';
+    row.innerHTML = `<span>${s.name}</span><span>${secCorrect}/${secAnswers.length}</span>`;
+    breakdown.appendChild(row);
+  });
+
+  const missed = answers.filter(a=>!a.isCorrect);
+  missedQueue = missed;
+  const missedList = document.getElementById('missed-list');
+  missedList.innerHTML = '';
+  if(missed.length){
+    const h = document.createElement('h3');
+    h.textContent = 'Review Missed Questions';
+    h.style.marginBottom = '8px';
+    missedList.appendChild(h);
+    missed.forEach(m=>{
+      const div = document.createElement('div');
+      div.className = 'missed-item';
+      div.innerHTML = `<div class="qtxt">${m.question}</div><div>Correct answer: ${m.choices[m.correctIdx]}</div>`;
+      missedList.appendChild(div);
+    });
+  }
+  document.getElementById('retake-btn').style.display = missed.length ? 'inline-block' : 'none';
+}
+
+document.getElementById('retake-btn').onclick = ()=>{
+  const missedQs = QUESTIONS.filter(q => missedQueue.some(m=>m.question===q.q));
+  quizQueue = shuffle(missedQs);
+  current = 0;
+  answers = [];
+  document.getElementById('result-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  showQuestion();
+};
+
+document.getElementById('restart-btn').onclick = ()=>{
+  document.getElementById('result-screen').classList.add('hidden');
+  document.getElementById('setup-screen').classList.remove('hidden');
+  renderSetup();
+};
+</script>
+</body>
+</html>

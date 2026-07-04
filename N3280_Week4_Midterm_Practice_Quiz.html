@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>N3280 Week 4 Midterm Practice Quiz</title>
+<style>
+  :root{
+    --navy:#132A3A;
+    --navy-deep:#0B1D29;
+    --teal:#1C7293;
+    --teal-light:#5FA8C9;
+    --mint:#7FD1AE;
+    --paper:#F6F8F9;
+    --card:#FFFFFF;
+    --ink:#16242E;
+    --muted:#5A6B76;
+    --wrong:#C4453A;
+    --right:#2E8B57;
+    --border:#E0E6E9;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .app{max-width:760px;margin:0 auto;padding:28px 18px 60px;}
+  .masthead{
+    background: linear-gradient(135deg, var(--navy-deep), var(--navy) 60%, var(--teal));
+    border-radius:14px;
+    padding:26px 24px;
+    color:#fff;
+    margin-bottom:22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .masthead::after{
+    content:"";
+    position:absolute; right:-40px; top:-40px;
+    width:160px;height:160px;border-radius:50%;
+    background:rgba(127,209,174,0.15);
+  }
+  .masthead h1{margin:0 0 6px; font-size:1.5rem; letter-spacing:0.2px;}
+  .masthead p{margin:0; color:#CFE3EA; font-size:0.92rem;}
+  .pill-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
+  .pill{
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.25);
+    border-radius:999px;
+    padding:4px 12px;
+    font-size:0.76rem;
+    color:#EAF3F6;
+  }
+
+  #setup-screen .section-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0 22px;
+  }
+  .sec-card{
+    background:var(--card); border:1.5px solid var(--border); border-radius:10px;
+    padding:12px 14px; cursor:pointer; transition:.15s;
+  }
+  .sec-card:hover{border-color:var(--teal-light);}
+  .sec-card.active{border-color:var(--teal); background:#EAF6F9;}
+  .sec-card .num{font-size:0.72rem; color:var(--teal); font-weight:700; letter-spacing:0.5px;}
+  .sec-card .name{font-size:0.86rem; font-weight:600; margin-top:2px;}
+  .sec-card .count{font-size:0.74rem; color:var(--muted); margin-top:4px;}
+
+  button.primary{
+    background: var(--teal); color:#fff; border:none; border-radius:9px;
+    padding:13px 20px; font-size:0.98rem; font-weight:600; cursor:pointer;
+    width:100%; transition:.15s;
+  }
+  button.primary:hover{background:var(--navy);}
+  button.ghost{
+    background:transparent; color:var(--teal); border:1.5px solid var(--teal);
+    border-radius:9px; padding:10px 18px; font-size:0.9rem; font-weight:600; cursor:pointer;
+  }
+  button.ghost:hover{background:#EAF6F9;}
+
+  .quiz-card{
+    background:var(--card); border-radius:14px; border:1px solid var(--border);
+    padding:24px; box-shadow:0 2px 10px rgba(19,42,58,0.05);
+  }
+  .progress-track{
+    height:6px; background:var(--border); border-radius:6px; overflow:hidden; margin-bottom:18px;
+  }
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--teal), var(--mint)); transition:.3s;}
+  .q-meta{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .q-tag{font-size:0.72rem; font-weight:700; color:var(--teal); letter-spacing:0.5px; text-transform:uppercase;}
+  .q-count{font-size:0.78rem; color:var(--muted);}
+  .q-text{font-size:1.08rem; line-height:1.5; margin:6px 0 18px; font-weight:600; color:var(--navy-deep);}
+  .choice{
+    display:block; width:100%; text-align:left; background:#fff;
+    border:1.5px solid var(--border); border-radius:9px; padding:12px 14px;
+    margin-bottom:9px; font-size:0.92rem; cursor:pointer; transition:.12s;
+    color:var(--ink);
+  }
+  .choice:hover{border-color:var(--teal-light); background:#F7FBFC;}
+  .choice.selected-right{border-color:var(--right); background:#EAF7EF; color:#1E5E3C;}
+  .choice.selected-wrong{border-color:var(--wrong); background:#FBEAE8; color:#8C2E26;}
+  .choice.reveal-right{border-color:var(--right); background:#EAF7EF; color:#1E5E3C;}
+  .choice[disabled]{cursor:default;}
+  .explain{
+    margin-top:10px; padding:12px 14px; border-radius:9px; background:#F0F5F3;
+    font-size:0.87rem; color:var(--muted); border-left:3px solid var(--teal); display:none;
+  }
+  .explain.show{display:block;}
+  .nav-row{display:flex; justify-content:space-between; margin-top:20px; gap:10px;}
+
+  #result-screen .quiz-card{text-align:center;}
+  .score-circle{
+    width:130px; height:130px; border-radius:50%; margin:14px auto 6px;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    background: conic-gradient(var(--teal) calc(var(--pct) * 1%), var(--border) 0);
+  }
+  .score-circle-inner{
+    width:104px; height:104px; border-radius:50%; background:#fff;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+  }
+  .score-circle-inner .big{font-size:1.6rem; font-weight:800; color:var(--navy-deep);}
+  .score-circle-inner .small{font-size:0.7rem; color:var(--muted);}
+  .breakdown{text-align:left; margin-top:20px;}
+  .breakdown-row{
+    display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);
+    font-size:0.86rem;
+  }
+  .missed-list{text-align:left; margin-top:16px;}
+  .missed-item{
+    background:#FBEAE8; border-radius:8px; padding:10px 12px; margin-bottom:8px; font-size:0.83rem;
+  }
+  .missed-item .qtxt{font-weight:600; color:#8C2E26; margin-bottom:3px;}
+  .hidden{display:none;}
+  .foot-note{text-align:center; color:var(--muted); font-size:0.74rem; margin-top:18px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="masthead">
+    <h1>N3280 Pathophysiology — Week 4 Practice Quiz</h1>
+    <p>Sections XIII-XIV: Neurologic Trauma &amp; Disorders · Endocrine Pathophysiology</p>
+    <div class="pill-row" id="pill-row"></div>
+  </div>
+
+  <div id="setup-screen">
+    <div class="quiz-card">
+      <p style="margin-top:0; color:var(--muted); font-size:0.9rem;">Pick which section(s) to practice, or leave all selected for a full mixed quiz.</p>
+      <div class="section-grid" id="section-grid"></div>
+      <button class="primary" id="start-btn">Start Quiz</button>
+    </div>
+  </div>
+
+  <div id="quiz-screen" class="hidden">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="quiz-card">
+      <div class="q-meta">
+        <span class="q-tag" id="q-tag"></span>
+        <span class="q-count" id="q-count"></span>
+      </div>
+      <div class="q-text" id="q-text"></div>
+      <div id="choices"></div>
+      <div class="explain" id="explain"></div>
+      <div class="nav-row">
+        <button class="ghost" id="quit-btn">End Quiz</button>
+        <button class="primary" id="next-btn" style="width:auto; display:none;">Next Question →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="result-screen" class="hidden">
+    <div class="quiz-card">
+      <h2 style="margin-top:0;">Results</h2>
+      <div class="score-circle" id="score-circle" style="--pct:0;">
+        <div class="score-circle-inner">
+          <div class="big" id="score-big">0%</div>
+          <div class="small">score</div>
+        </div>
+      </div>
+      <div id="score-line" style="color:var(--muted); font-size:0.9rem;"></div>
+      <div class="breakdown" id="breakdown"></div>
+      <div class="missed-list" id="missed-list"></div>
+      <div class="nav-row">
+        <button class="ghost" id="retake-btn">Retake Missed Only</button>
+        <button class="primary" id="restart-btn" style="width:auto;">New Quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot-note">Based on N3280 Week 4 lecture content (Ch. 17-20) &amp; study guide. Good luck! 🩺</div>
+</div>
+
+<script>
+const QUESTIONS = [
+// ---- SECTION XIII: Neurologic Trauma and Neurologic Disorders ----
+{sec:"XIII", tag:"Neuro Trauma", q:"In a closed brain injury, the dura remains intact. Which term describes injury occurring directly beneath the point of impact?", choices:["Contrecoup","Coup","Diffuse axonal injury","Secondary injury"], correct:1, explain:"Coup injury occurs directly below the point of impact; contrecoup injury occurs on the opposite side as the brain rebounds within the skull."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Diffuse axonal injury is clinically defined by coma lasting how long after TBI?", choices:["Less than 1 hour","1-6 hours","6-24 hours","More than 1 week"], correct:2, explain:"Diffuse axonal injury (diffuse brain injury) is clinically defined as coma lasting 6-24 hours after TBI, from acceleration/deceleration or rotational shearing forces."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Secondary brain injury systemic processes include all of the following EXCEPT:", choices:["Hypotension","Hypoxia","Hypercapnia","Increased cerebral perfusion pressure"], correct:3, explain:"Secondary injury systemic processes include hypotension, hypoxia, anemia, hypercapnia, and hypocapnia — a DECREASED (not increased) cerebral perfusion pressure is a cerebral process contributing to secondary injury."},
+{sec:"XIII", tag:"Neuro Trauma", q:"A progressive dementing disease resulting from repeated head injury (e.g., in sports) is called:", choices:["Postconcussion syndrome","Chronic traumatic encephalopathy","Posttraumatic seizure disorder","Diffuse axonal injury"], correct:1, explain:"Chronic traumatic encephalopathy is a progressive dementing disease from repeated injury, seen in sports injuries, blast trauma, and work-related head trauma."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Spinal shock produces which of the following?", choices:["Hyperreflexia and spastic paralysis below the injury","Complete loss of reflex function and flaccid paralysis below the injury","Severe hypertension above the injury level","Increased bladder/rectal control"], correct:1, explain:"Spinal shock causes complete loss of reflex function, flaccid paralysis, absent sensation, and loss of bladder/rectal control below the level of injury, along with transient hypotension and bradycardia."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Autonomic hyperreflexia (dysreflexia) is caused by:", choices:["Loss of all sympathetic activity below the injury","A sudden, massive reflex sympathetic discharge because descending inhibition is blocked","Complete absence of parasympathetic tone","Direct trauma to the vagus nerve"], correct:1, explain:"Autonomic hyperreflexia results from a sudden, massive reflex sympathetic discharge because descending inhibition is blocked (in injuries above T6), typically triggered by a stimulus like a full bladder."},
+{sec:"XIII", tag:"Neuro Trauma", q:"An osseous defect in the pars interarticularis that allows a vertebra to slide anteriorly is called:", choices:["Spondylolysis","Spondylolisthesis","Spinal stenosis","Herniated disk"], correct:1, explain:"Spondylolisthesis is an osseous defect in the pars interarticularis allowing anterior vertebral slippage; spondylolysis is a structural defect in the same region without necessarily causing slippage."},
+{sec:"XIII", tag:"Neuro Trauma", q:"An ischemic event causing neurologic dysfunction lasting less than 1 hour is a:", choices:["Thrombotic stroke","Lacunar stroke","Transient ischemic attack (TIA)","Embolic stroke"], correct:2, explain:"A TIA is an ischemic event causing neurologic dysfunction lasting less than 1 hour, without permanent infarction."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Occlusion of a single, deep perforating artery of the brain describes a:", choices:["Lacunar stroke","Embolic stroke","Hemorrhagic stroke","TIA"], correct:0, explain:"A lacunar stroke results from occlusion of a single, deep perforating artery of the brain."},
+{sec:"XIII", tag:"Neuro Trauma", q:"In a cerebral infarction, the area of potentially salvageable tissue surrounding the irreversibly necrotic core is called the:", choices:["Ischemic penumbra","Subarachnoid space","Lacunar zone","Vasogenic zone"], correct:0, explain:"The ischemic penumbra surrounds the irreversibly necrotic core; prompt thrombolytic therapy may restore perfusion here and prevent further necrosis."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Which is the PRIMARY cause of hemorrhagic stroke?", choices:["Hypertension","Diabetes mellitus","Atrial fibrillation","Hyperlipidemia"], correct:0, explain:"Hypertension is the primary cause of hemorrhagic stroke, in which bleeding compresses brain tissue leading to ischemia, edema, and increased ICP."},
+{sec:"XIII", tag:"Neuro Trauma", q:"A positive Kernig sign and Brudzinski sign are classic manifestations of:", choices:["Subarachnoid hemorrhage","Ischemic stroke","Diabetes insipidus","Cushing syndrome"], correct:0, explain:"Kernig and Brudzinski signs are classic manifestations of subarachnoid hemorrhage (and meningitis), reflecting meningeal irritation."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Which headache type is unilateral, throbbing, associated with nausea/photophobia, and most common in women aged 25-55?", choices:["Tension-type headache","Cluster headache","Migraine","Secondary headache"], correct:2, explain:"Migraine is typically unilateral, throbbing, moderate-severe, worsened by movement, and associated with nausea/vomiting and/or photophobia/phonophobia; most common in women 25-55."},
+{sec:"XIII", tag:"Neuro Trauma", q:"A headache involving the autonomic division of the trigeminal nerve, occurring in clusters with ipsilateral tearing and ptosis, describes:", choices:["Migraine","Tension-type headache","Cluster headache","Thunderclap headache"], correct:2, explain:"Cluster headache involves the trigeminal autonomic division, occurring in clusters with unilateral severe pain and ipsilateral tearing, ptosis, and nasal congestion; more common in men 20-50."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Bacterial meningitis is most commonly caused by which organisms crossing the blood-brain barrier?", choices:["Enteroviruses and arboviruses","Meningococci and pneumococci","Herpes simplex type 1","Candida species"], correct:1, explain:"Bacterial meningitis is caused by meningococci and pneumococci, which cross the blood-brain barrier to infect the meninges."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Fungal meningitis often first presents with which manifestations?", choices:["Sudden thunderclap headache","Dementia or communicating hydrocephalus","Acute purpura fulminans","Ptosis and diplopia"], correct:1, explain:"Fungal meningitis is chronic with insidious development; first manifestations are often dementia or communicating hydrocephalus."},
+{sec:"XIII", tag:"Neuro Trauma", q:"A brain abscess progresses through which sequence?", choices:["Necrotic core, then localized inflammation, then capsule formation","Localized inflammation, then a necrotic core with connective tissue capsule formation","Direct capsule formation with no inflammatory phase","Immediate resolution without intervention"], correct:1, explain:"Brain abscesses progress from localized inflammation to a necrotic core with formation of a connective tissue capsule, and can spread to form daughter abscesses."},
+{sec:"XIII", tag:"Neuro Trauma", q:"HIV-associated neurocognitive disorder (HAND) prevalence has been reduced by:", choices:["Corticosteroid therapy","Combined antiretroviral therapy (ART)","Thrombolytic therapy","Insulin therapy"], correct:1, explain:"Combined antiretroviral therapy (ART) has reduced the prevalence of HAND and improved survival in people with HIV."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Multiple sclerosis pathophysiology involves:", choices:["Autoantibodies against acetylcholine receptors","Multiple focal areas of CNS myelin loss (plaques) disrupting nerve conduction","Loss of dopamine-producing basal ganglia neurons","Beta-cell destruction in the pancreas"], correct:1, explain:"MS is a chronic, immune-mediated inflammatory disease with focal demyelinating plaques that disrupt nerve conduction and lead to neuron death and brain atrophy."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Myasthenia gravis results from IgG antibodies produced against:", choices:["Myelin basic protein","Acetylcholine receptors at the neuromuscular junction","Dopamine receptors","Beta cells of the pancreas"], correct:1, explain:"Myasthenia gravis involves IgG antibodies against acetylcholine receptors at the neuromuscular junction, impairing neuromuscular transmission and causing fatigable muscle weakness."},
+{sec:"XIII", tag:"Neuro Trauma", q:"An acquired inflammatory disease causing peripheral nerve demyelination, usually following a respiratory or GI infection, is:", choices:["Guillain-Barré syndrome","Amyotrophic lateral sclerosis","Multiple sclerosis","Myasthenia gravis"], correct:0, explain:"Guillain-Barré syndrome is an acquired inflammatory disease causing peripheral nerve demyelination, usually following a respiratory tract or GI infection, with recovery over weeks to months."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Fontanelles in infants serve which purpose?", choices:["They have no functional purpose","Allow skull compression during birth and accommodate rapid brain growth","Prevent all forms of head trauma","Regulate CSF production"], correct:1, explain:"Fontanelles (soft spots between skull bones) allow the skull to compress during birth and accommodate the rapid brain growth of infancy."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Which neural tube defect involves a vertebral defect that is NOT visible, with no neurologic dysfunction and normal spinal cord/nerves?", choices:["Myelomeningocele","Meningocele","Spina bifida occulta","Anencephaly"], correct:2, explain:"Spina bifida occulta is a vertebral defect with no visible exposure of meninges/spinal cord, no neurologic dysfunction, and normal spinal cord/nerves."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Premature closure of one or more cranial sutures, preventing growth perpendicular to the suture line, is:", choices:["Craniosynostosis","Hydrocephalus","Microcephaly","Dandy-Walker malformation"], correct:0, explain:"Craniosynostosis is premature closure of cranial sutures, preventing skull growth perpendicular to the suture line, and can cause plagiocephaly (asymmetric skull shape)."},
+{sec:"XIII", tag:"Neuro Trauma", q:"A congenital cerebellar defect featuring a large posterior fossa cyst is:", choices:["Dandy-Walker malformation","Chiari II malformation","Cortical dysplasia","Tethered cord syndrome"], correct:0, explain:"Dandy-Walker malformation is a congenital cerebellar defect with a large posterior fossa cyst."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Cerebral palsy is classified as a:", choices:["Progressive metabolic encephalopathy","Static (nonprogressive) encephalopathy from a fixed lesion","Bacterial CNS infection","Chromosomal disorder"], correct:1, explain:"Cerebral palsy is the primary example of a static (nonprogressive) encephalopathy — a neurologic condition from a fixed lesion without active/progressive disease."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Phenylketonuria (PKU) results from a defect in which metabolic process?", choices:["Lipid metabolism","Amino acid metabolism","Carbohydrate metabolism","Purine metabolism"], correct:1, explain:"PKU is a defect in amino acid metabolism, resulting in lack of normal protein and absence of enzymatic activity."},
+{sec:"XIII", tag:"Neuro Trauma", q:"Tay-Sachs disease is an example of which category of inherited metabolic disorder?", choices:["Amino acid metabolism defect","Lysosomal storage disease (lipid metabolism defect)","Carbohydrate metabolism defect","Purine metabolism defect"], correct:1, explain:"Tay-Sachs disease is a lysosomal storage disease, reflecting a defect in lipid metabolism."},
+{sec:"XIII", tag:"Neuro Trauma", q:"The most common malignant embryonal brain tumor in children, discussed in both weeks' slides, is:", choices:["Meningioma","Medulloblastoma","Pituitary adenoma","Pheochromocytoma"], correct:1, explain:"Medulloblastoma is a common malignant embryonal brain tumor in children, typically arising in the cerebellum."},
+
+// ---- SECTION XIV: Endocrine Pathophysiology ----
+{sec:"XIV", tag:"Endocrine", q:"A response to a stimulus that DECREASES synthesis and secretion of a hormone describes:", choices:["Positive feedback","Negative feedback","Up-regulation","Down-regulation"], correct:1, explain:"Negative feedback describes a response that decreases hormone synthesis/secretion (e.g., thyroxine/T3 suppressing further TRH/TSH release)."},
+{sec:"XIV", tag:"Endocrine", q:"LOW concentrations of a hormone increasing the number or affinity of its receptors describes:", choices:["Down-regulation","Up-regulation","Negative feedback","Second-messenger activation"], correct:1, explain:"Up-regulation occurs when low hormone concentrations increase receptor number/affinity; down-regulation occurs with high hormone concentrations."},
+{sec:"XIV", tag:"Endocrine", q:"Which hormone type circulates primarily bound to a carrier, diffuses freely across membranes, and binds cytosolic/nuclear receptors?", choices:["Water-soluble hormones (protein hormones)","Lipid-soluble (steroid) hormones","Catecholamines","Peptide hormones"], correct:1, explain:"Lipid-soluble (steroid) hormones circulate bound to carriers, diffuse freely across membranes, and bind cytosolic or nuclear receptors, producing a rapid and long-lasting response."},
+{sec:"XIV", tag:"Endocrine", q:"Water-soluble hormones that cannot cross the plasma membrane initiate their effect via:", choices:["Direct binding to nuclear DNA","Surface receptors and second-messenger systems (e.g., cAMP)","Diffusion into the cytoplasm","Binding to carrier proteins in the blood"], correct:1, explain:"Water-soluble hormones bind surface receptors and initiate first- and second-messenger systems (cAMP, cGMP, tyrosine kinase, IP3) since they cannot cross the plasma membrane."},
+{sec:"XIV", tag:"Endocrine", q:"Which hormone is released by the posterior pituitary and controls plasma osmolality?", choices:["Oxytocin","Antidiuretic hormone (ADH)","Prolactin","Growth hormone"], correct:1, explain:"ADH, released from the posterior pituitary, controls plasma osmolality by regulating renal water reabsorption."},
+{sec:"XIV", tag:"Endocrine", q:"Hypersecretion of growth hormone in a child whose epiphyseal plates have NOT yet closed causes:", choices:["Acromegaly","Gigantism","Prolactinoma","Cushing disease"], correct:1, explain:"Gigantism is hypersecretion of GH in children before epiphyseal closure; acromegaly is hypersecretion of GH during adulthood after epiphyseal closure."},
+{sec:"XIV", tag:"Endocrine", q:"A prolactinoma in a female patient classically presents with:", choices:["Amenorrhea and galactorrhea","Gynecomastia and erectile dysfunction","Truncal obesity and moon face","Polyuria and polydipsia"], correct:0, explain:"In females, prolactinoma manifestations include amenorrhea, galactorrhea, hirsutism, and osteopenia; in males, gynecomastia, hypogonadism, and erectile dysfunction."},
+{sec:"XIV", tag:"Endocrine", q:"Panhypopituitarism refers to:", choices:["Deficiency of a single anterior pituitary hormone","Deficiency of ALL anterior pituitary hormones","Excess of all posterior pituitary hormones","A specific type of pituitary adenoma"], correct:1, explain:"Panhypopituitarism is deficiency of ALL anterior pituitary hormones, part of the broader category of hypopituitarism."},
+{sec:"XIV", tag:"Endocrine", q:"Graves disease is caused by:", choices:["Autoantibodies against the TSH receptor stimulating the thyroid","Destruction of thyroid tissue by autoimmune mechanisms","A pituitary adenoma secreting excess TSH","Iodine deficiency"], correct:0, explain:"Graves disease is an autoimmune disease caused by autoantibodies against the TSH receptor that stimulate the thyroid, producing hyperthyroidism."},
+{sec:"XIV", tag:"Endocrine", q:"A dramatic, potentially fatal rise in thyroid hormone levels is called:", choices:["Myxedema coma","Thyroid storm (thyrotoxic crisis)","Addisonian crisis","Hashimoto crisis"], correct:1, explain:"Thyroid storm (thyrotoxic crisis) is a state where TH levels rise dramatically and can be fatal if untreated."},
+{sec:"XIV", tag:"Endocrine", q:"Hashimoto disease is characterized by:", choices:["Autoimmune stimulation of the TSH receptor","Autoimmune, gradual destruction of thyroid tissue","A prolactin-secreting pituitary tumor","Excess aldosterone secretion"], correct:1, explain:"Hashimoto disease is an autoimmune disease causing gradual destruction of thyroid tissue, leading to hypothyroidism."},
+{sec:"XIV", tag:"Endocrine", q:"Increased PTH secretion occurring secondary to chronic hypocalcemia describes:", choices:["Primary hyperparathyroidism","Secondary hyperparathyroidism","Tertiary hyperparathyroidism","Hypoparathyroidism"], correct:1, explain:"Secondary hyperparathyroidism is increased PTH secretion secondary to chronic hypocalcemia — the parathyroid glands are responding appropriately to low calcium."},
+{sec:"XIV", tag:"Endocrine", q:"Which pancreatic cell type secretes insulin and amylin?", choices:["Alpha cells","Beta cells","Delta cells","F (PP) cells"], correct:1, explain:"Beta cells secrete insulin and amylin; alpha cells secrete glucagon; delta cells secrete somatostatin and gastrin."},
+{sec:"XIV", tag:"Endocrine", q:"Type 1 diabetes mellitus pathophysiology primarily involves:", choices:["Insulin resistance with compensatory hyperinsulinemia","Immunologically mediated beta-cell destruction and apoptosis","Excess glucagon secretion from alpha cells","Adrenal medulla hyperfunction"], correct:1, explain:"Type 1 diabetes involves immunologically mediated beta-cell destruction and apoptosis; once 80-90% of beta cells are lost, hyperglycemia develops."},
+{sec:"XIV", tag:"Endocrine", q:"During diabetic ketoacidosis (DKA), profound insulin deficiency results in:", choices:["Decreased fat mobilization and increased glucose uptake","Increased fat mobilization and activation of hepatic glucose-forming pathways","Activation of bicarbonate buffering with no ketosis","Increased insulin secretion from beta cells"], correct:1, explain:"In DKA, insulin deficiency causes INCREASED fat mobilization and activation of glucose-forming pathways (gluconeogenesis) in the liver, along with impaired (not increased) glucose uptake into cells."},
+{sec:"XIV", tag:"Endocrine", q:"Which acute diabetic complication typically occurs WITHOUT significant ketosis, usually in type 2 diabetes?", choices:["Diabetic ketoacidosis (DKA)","Hyperosmolar hyperglycemic nonketotic syndrome (HHNKS)","Hypoglycemia","Lactic acidosis"], correct:1, explain:"HHNKS involves severe hyperglycemia and hyperosmolality without significant ketosis, more typical of type 2 diabetes, often with profound dehydration."},
+{sec:"XIV", tag:"Endocrine", q:"Cushing DISEASE specifically refers to:", choices:["Any chronic excess cortisol regardless of cause","Excessive anterior pituitary secretion of ACTH","Primary adrenal insufficiency","Excess aldosterone from the adrenal cortex"], correct:1, explain:"Cushing disease specifically refers to excessive anterior pituitary ACTH secretion (typically from a pituitary adenoma); Cushing SYNDROME is the broader term for manifestations of chronic excess cortisol from any cause."},
+{sec:"XIV", tag:"Endocrine", q:"Addison disease is characterized by:", choices:["Excess cortisol from a pituitary tumor","Autoimmune destruction of adrenal cortical cells causing primary adrenal insufficiency","Hypersecretion of aldosterone from an adrenal adenoma","Excess catecholamines from a pheochromocytoma"], correct:1, explain:"Addison disease is primary adrenal insufficiency from autoimmune destruction of adrenal cortical cells; an Addisonian crisis involves hypotension progressing to vascular collapse and shock."},
+{sec:"XIV", tag:"Endocrine", q:"Hypersecretion of adrenal ANDROGENS causes:", choices:["Feminization","Virilization","Hypocalcemia","Hyperglycemia only"], correct:1, explain:"Hypersecretion of adrenal androgens causes virilization (male secondary sex characteristics); hypersecretion of adrenal estrogens causes feminization."},
+{sec:"XIV", tag:"Endocrine", q:"Primary hyperaldosteronism (Conn syndrome) results from:", choices:["An extra-adrenal stimulus of aldosterone secretion","An abnormality within the adrenal cortex itself increasing aldosterone secretion","Adrenal cortical destruction","Excess ACTH from the pituitary"], correct:1, explain:"Primary hyperaldosteronism (Conn syndrome) results from an abnormality within the adrenal cortex itself; secondary hyperaldosteronism comes from an extra-adrenal stimulus."},
+{sec:"XIV", tag:"Endocrine", q:"Pheochromocytoma is a tumor derived from which cells, causing excess catecholamine production?", choices:["Beta cells of the pancreas","Chromaffin cells of the adrenal medulla","Follicular cells of the thyroid","Parathyroid chief cells"], correct:1, explain:"Pheochromocytoma arises from chromaffin cells (pheochromocytes) of the adrenal medulla, causing excessive catecholamine production."},
+{sec:"XIV", tag:"Endocrine", q:"SIADH causes which electrolyte disturbance?", choices:["Hypernatremia from water loss","Hyponatremia from excess water retention","Hyperkalemia","Hypocalcemia"], correct:1, explain:"SIADH is hypersecretion of ADH causing excess water reabsorption, leading to dilutional hyponatremia."},
+{sec:"XIV", tag:"Endocrine", q:"Central (neurogenic) diabetes insipidus is caused by:", choices:["Excess ADH secretion","Insufficient ADH secretion","Inadequate renal response to normal ADH levels","Excess aldosterone secretion"], correct:1, explain:"Central (neurogenic) diabetes insipidus involves insufficient ADH secretion; nephrogenic diabetes insipidus involves an inadequate renal response to ADH despite normal secretion."},
+{sec:"XIV", tag:"Endocrine", q:"Which manifestation is shared by both neurogenic and nephrogenic diabetes insipidus?", choices:["Hyponatremia and water retention","Polyuria, nocturia, and continuous thirst","Hyperkalemia and hypertension","Weight gain and cold intolerance"], correct:1, explain:"Both forms of diabetes insipidus cause excessive free water loss in urine, producing polyuria, nocturia, and continuous thirst (with resulting hypernatremia risk)."},
+];
+
+const SECTIONS = [
+  {id:"XIII", name:"Neurologic Trauma & Disorders", num:"XIII"},
+  {id:"XIV", name:"Endocrine Pathophysiology", num:"XIV"},
+];
+
+let activeSections = new Set(SECTIONS.map(s=>s.id));
+let quizQueue = [];
+let current = 0;
+let answers = [];
+let missedQueue = [];
+
+const pillRow = document.getElementById('pill-row');
+pillRow.innerHTML = `<span class="pill">${QUESTIONS.length} total questions</span><span class="pill">3 topic areas</span>`;
+
+function renderSetup(){
+  const grid = document.getElementById('section-grid');
+  grid.innerHTML = '';
+  SECTIONS.forEach(s=>{
+    const count = QUESTIONS.filter(q=>q.sec===s.id).length;
+    const div = document.createElement('div');
+    div.className = 'sec-card' + (activeSections.has(s.id) ? ' active' : '');
+    div.innerHTML = `<div class="num">SECTION ${s.num}</div><div class="name">${s.name}</div><div class="count">${count} questions</div>`;
+    div.onclick = ()=>{
+      if(activeSections.has(s.id)){ activeSections.delete(s.id); } else { activeSections.add(s.id); }
+      renderSetup();
+    };
+    grid.appendChild(div);
+  });
+}
+renderSetup();
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+document.getElementById('start-btn').onclick = ()=>{
+  let pool = QUESTIONS.filter(q=>activeSections.has(q.sec));
+  if(pool.length===0) pool = QUESTIONS.slice();
+  quizQueue = shuffle(pool);
+  current = 0;
+  answers = [];
+  document.getElementById('setup-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  document.getElementById('result-screen').classList.add('hidden');
+  showQuestion();
+};
+
+function showQuestion(){
+  const q = quizQueue[current];
+  document.getElementById('progress-fill').style.width = ((current)/quizQueue.length*100)+'%';
+  document.getElementById('q-tag').textContent = q.tag;
+  document.getElementById('q-count').textContent = `Question ${current+1} of ${quizQueue.length}`;
+  document.getElementById('q-text').textContent = q.q;
+  const choicesDiv = document.getElementById('choices');
+  choicesDiv.innerHTML = '';
+  const explainDiv = document.getElementById('explain');
+  explainDiv.classList.remove('show');
+  explainDiv.textContent = '';
+  document.getElementById('next-btn').style.display = 'none';
+
+  q.choices.forEach((choiceText, idx)=>{
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.textContent = choiceText;
+    btn.onclick = ()=> selectAnswer(idx);
+    choicesDiv.appendChild(btn);
+  });
+}
+
+function selectAnswer(idx){
+  const q = quizQueue[current];
+  const buttons = document.querySelectorAll('#choices .choice');
+  buttons.forEach(b=> b.disabled = true);
+  const isCorrect = idx === q.correct;
+  buttons[idx].classList.add(isCorrect ? 'selected-right' : 'selected-wrong');
+  if(!isCorrect){ buttons[q.correct].classList.add('reveal-right'); }
+  const explainDiv = document.getElementById('explain');
+  explainDiv.textContent = q.explain;
+  explainDiv.classList.add('show');
+  answers.push({question:q.q, tag:q.tag, sec:q.sec, chosen:idx, correctIdx:q.correct, isCorrect, choices:q.choices});
+  document.getElementById('next-btn').style.display = 'inline-block';
+  document.getElementById('next-btn').textContent = (current === quizQueue.length-1) ? 'See Results →' : 'Next Question →';
+}
+
+document.getElementById('next-btn').onclick = ()=>{
+  current++;
+  if(current >= quizQueue.length){
+    showResults();
+  } else {
+    showQuestion();
+  }
+};
+
+document.getElementById('quit-btn').onclick = ()=>{
+  if(answers.length===0){
+    document.getElementById('quiz-screen').classList.add('hidden');
+    document.getElementById('setup-screen').classList.remove('hidden');
+  } else {
+    showResults();
+  }
+};
+
+function showResults(){
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('quiz-screen').classList.add('hidden');
+  document.getElementById('result-screen').classList.remove('hidden');
+
+  const correctCount = answers.filter(a=>a.isCorrect).length;
+  const total = answers.length;
+  const pct = total ? Math.round(correctCount/total*100) : 0;
+
+  document.getElementById('score-circle').style.setProperty('--pct', pct);
+  document.getElementById('score-big').textContent = pct+'%';
+  document.getElementById('score-line').textContent = `${correctCount} of ${total} correct`;
+
+  const breakdown = document.getElementById('breakdown');
+  breakdown.innerHTML = '<h3 style="margin-bottom:6px;">By Section</h3>';
+  SECTIONS.forEach(s=>{
+    const secAnswers = answers.filter(a=>a.sec===s.id);
+    if(secAnswers.length===0) return;
+    const secCorrect = secAnswers.filter(a=>a.isCorrect).length;
+    const row = document.createElement('div');
+    row.className = 'breakdown-row';
+    row.innerHTML = `<span>${s.name}</span><span>${secCorrect}/${secAnswers.length}</span>`;
+    breakdown.appendChild(row);
+  });
+
+  const missed = answers.filter(a=>!a.isCorrect);
+  missedQueue = missed;
+  const missedList = document.getElementById('missed-list');
+  missedList.innerHTML = '';
+  if(missed.length){
+    const h = document.createElement('h3');
+    h.textContent = 'Review Missed Questions';
+    h.style.marginBottom = '8px';
+    missedList.appendChild(h);
+    missed.forEach(m=>{
+      const div = document.createElement('div');
+      div.className = 'missed-item';
+      div.innerHTML = `<div class="qtxt">${m.question}</div><div>Correct answer: ${m.choices[m.correctIdx]}</div>`;
+      missedList.appendChild(div);
+    });
+  }
+  document.getElementById('retake-btn').style.display = missed.length ? 'inline-block' : 'none';
+}
+
+document.getElementById('retake-btn').onclick = ()=>{
+  const missedQs = QUESTIONS.filter(q => missedQueue.some(m=>m.question===q.q));
+  quizQueue = shuffle(missedQs);
+  current = 0;
+  answers = [];
+  document.getElementById('result-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  showQuestion();
+};
+
+document.getElementById('restart-btn').onclick = ()=>{
+  document.getElementById('result-screen').classList.add('hidden');
+  document.getElementById('setup-screen').classList.remove('hidden');
+  renderSetup();
+};
+</script>
+</body>
+</html>
